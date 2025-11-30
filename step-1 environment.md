@@ -1,26 +1,26 @@
-📌 1. Components Overview
+🚀 数据湖项目（Kafka + Iceberg + MinIO + Trino 本地环境）
 
-This project demonstrates a minimal local setup of a modern Lakehouse Architecture using Docker:
+本项目基于 Docker 构建一个轻量级的数据湖（Lakehouse）环境，包含：
 
-Component	Description
-Zookeeper	Coordination service for Kafka.
-Kafka	Distributed message queue, supports batch consumption, offset management, and plugin ecosystem.
-Kafka-UI	Web dashboard for monitoring Kafka topics, consumers and offsets.
-Kafka-Connect	Responsible for consuming Kafka messages and sinking them to S3/MinIO (Parquet / Iceberg).
-MinIO	Distributed object storage (S3-compatible). Production-ready alternative: AWS S3.
-Iceberg-REST	REST catalog service for Apache Iceberg (alternative to Hive Metastore).
-Postgres	Iceberg catalog backend (replaces SQLite, more stable).
-Trino	Distributed SQL engine for analytics and ad-hoc querying.
-📌 2. Docker Compose Setup
+Kafka / Kafka Connect / Kafka UI
 
-The following configuration has been tested and verified locally.
-For production environments, replace MinIO with AWS S3 and scale components horizontally.
+MinIO（S3）
 
-Project directory:
+Iceberg REST Catalog（元数据管理）
 
-/workspace-bigdata/offline/kafka-s3-demo
+PostgreSQL（Iceberg Catalog 后端）
+
+Trino（分布式 SQL 查询引擎）
+
+适用于本地开发测试、个人研究和企业 PoC（Proof of Concept）。
+
+📌 一、docker-compose 环境
+
+将以下内容保存为：
 
 docker-compose.yml
+
+🧱 完整 docker-compose.yml（可直接用）
 version: '3.8'
 
 services:
@@ -79,27 +79,33 @@ CONNECT_BOOTSTRAP_SERVERS: "kafka:9092"
 CONNECT_REST_ADVERTISED_HOST_NAME: "connect"
 CONNECT_REST_PORT: "8083"
 CONNECT_GROUP_ID: "connect-cluster"
-CONNECT_CONFIG_STORAGE_TOPIC: "connect-configs"
-CONNECT_OFFSET_STORAGE_TOPIC: "connect-offsets"
-CONNECT_STATUS_STORAGE_TOPIC: "connect-status"
-CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: "1"
-CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: "1"
-CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: "1"
-CONNECT_KEY_CONVERTER: "org.apache.kafka.connect.storage.StringConverter"
-CONNECT_KEY_CONVERTER_SCHEMAS_ENABLE: "false"
-CONNECT_VALUE_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
-CONNECT_VALUE_CONVERTER_SCHEMAS_ENABLE: "true"
-CONNECT_PLUGIN_PATH: "/usr/share/java,/usr/share/confluent-hub-components,/connect-plugins"
-volumes:
-- ./plugins:/connect-plugins
-command:
-- bash
-- -c
-- |
-echo "Installing S3 sink connector from Confluent Hub..."
-confluent-hub install --no-prompt confluentinc/kafka-connect-s3:latest
-echo "Starting Kafka Connect..."
-/etc/confluent/docker/run
+
+      CONNECT_CONFIG_STORAGE_TOPIC: "connect-configs"
+      CONNECT_OFFSET_STORAGE_TOPIC: "connect-offsets"
+      CONNECT_STATUS_STORAGE_TOPIC: "connect-status"
+      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: "1"
+      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: "1"
+      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: "1"
+
+      CONNECT_KEY_CONVERTER: "org.apache.kafka.connect.storage.StringConverter"
+      CONNECT_KEY_CONVERTER_SCHEMAS_ENABLE: "false"
+
+      CONNECT_VALUE_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
+      CONNECT_VALUE_CONVERTER_SCHEMAS_ENABLE: "true"
+
+      CONNECT_PLUGIN_PATH: "/usr/share/java,/usr/share/confluent-hub-components,/connect-plugins"
+
+    volumes:
+      - ./plugins:/connect-plugins
+
+    command:
+      - bash
+      - -c
+      - |
+        echo "Installing S3 sink connector from Confluent Hub..."
+        confluent-hub install --no-prompt confluentinc/kafka-connect-s3:latest
+        echo "Starting Kafka Connect..."
+        /etc/confluent/docker/run
 
 # -------------------------------
 # 1) MinIO (S3 Object Storage)
@@ -118,7 +124,7 @@ volumes:
 - ./minio-data:/data
 
 # -----------------------------------------------
-# 2) Iceberg REST Catalog (replace Hive Metastore)
+# 2) Iceberg REST Catalog（替代 Hive Metastore）
 # -----------------------------------------------
 iceberg-postgres:
 image: postgres:15-alpine
@@ -189,52 +195,71 @@ default:
 name: iceberg_net
 driver: bridge
 
+📌 二、插件准备
+1. S3 Sink Connector（Confluent 官方）
 
-💡 If any service fails to start, it's usually because its dependency wasn't fully initialized.
-Simply restart the container after a few seconds.
+下载地址：
 
-📌 3. Kafka Connect Plugin Preparation
-3.1 S3 Sink Connector (Confluent)
-
-Download from:
 https://www.confluent.io/hub/confluentinc/kafka-connect-s3
 
-Ensure version matches your Kafka Connect (e.g., 7.5.0)
 
-Extract it into:
+下载后存入：
 
 ./plugins/
 
-3.2 Iceberg Kafka Connector
 
-Download from:
+并解压。
+
+2. Iceberg Kafka Connector
+
+下载：
+
 https://github.com/databricks/iceberg-kafka-connect/releases
 
-Place and extract into the same:
+
+放入：
 
 ./plugins/
 
-📌 4. Maintenance & Operations
-# Start all services
+
+并解压。
+
+📌 三、启动 / 停止指令
+▶ 启动所有服务
 docker-compose up -d
 
-# Check running containers
-docker ps
-
-# List loaded Kafka Connect plugins
-curl http://localhost:8083/connector-plugins
-
-# Stop all containers
+⏹ 停止
 docker-compose down
 
-📌 5. Service Health Checklist
+查看运行状态
+docker ps
 
-Kafka UI: http://localhost:8080
+查看 Kafka Connect 是否加载成功
+curl http://localhost:8083/connector-plugins
 
-MinIO Console: http://localhost:9090
+📌 四、常用 Web 控制台入口
+服务	地址
+Kafka UI	http://localhost:8080
 
-Trino Web UI: http://localhost:8085
+MinIO 控制台	http://localhost:9090
 
-Iceberg REST Catalog: http://localhost:8181
+Trino Web UI	http://localhost:8085
 
-Kafka Connect Plugins: GET http://localhost:8083/connector-plugins
+Iceberg REST Catalog	http://localhost:8181
+
+Kafka Connect Plugins	http://localhost:8083/connector-plugins
+📌 五、注意事项
+
+Iceberg Catalog 必须使用 PostgreSQL，比 SQLite 稳定无数倍。
+
+MinIO 仅用于本地调试，生产应使用 AWS S3 / 阿里云 OSS / GCS。
+
+如果第一次启动失败，多半是 PostgreSQL 未初始化完成，可重启 Iceberg REST。
+
+Kafka、Trino、MinIO 均对内存有要求，本地至少建议：
+
+16GB RAM
+
+8 核 CPU
+
+如果你规划每小时处理千万级数据，这套架构可稳定运行。
