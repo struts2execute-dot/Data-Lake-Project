@@ -416,8 +416,12 @@ func GetProducer() sarama.SyncProducer {
 ```
 
 - 运行main函数。
+- 查看kafka-ui。
 - 查看s3存储。
   - data目录：ods列式压缩数据
   - metadata：表元数据
 
 ![docker](https://github.com/struts2execute-dot/Data-Lake-Project/blob/main/img/s3.png)
+
+## 六总结
+通过消息总线，我们可以将事件数据稳定的存储到S3存储中，为下一步的分布式计算做好准备。
