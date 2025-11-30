@@ -23,6 +23,14 @@
 
 将以下内容保存为 `docker-compose.yml`：
 
+- **zookeeper**：注册中心，暂服务于 kafka。
+- **kafka**：消息中间件，适合批量拉取和批量提交 offset，以及后端匹配的各种插件，是核心之一。
+- **kafka-ui**：用于做 kafka 监控。
+- **kafka-connect**：用于消费 kafka 消息，并进行数据转换 / 压缩 / S3 落盘等操作。
+- **minio**：分布式存储，可替换为 AWS。
+- **trino**：分布式计算框架。
+- **iceberg-rest**：Iceberg 表的元数据管理 REST API 服务（和 Hive Metadata 对标）。
+
 ```yaml
 version: '3.8'
 
@@ -198,14 +206,6 @@ networks:
     name: iceberg_net
     driver: bridge
 ```
-
-- **zookeeper**：注册中心，暂服务于 kafka。
-- **kafka**：消息中间件，适合批量拉取和批量提交 offset，以及后端匹配的各种插件，是核心之一。
-- **kafka-ui**：用于做 kafka 监控。
-- **kafka-connect**：用于消费 kafka 消息，并进行数据转换 / 压缩 / S3 落盘等操作。
-- **minio**：分布式存储，可替换为 AWS。
-- **trino**：分布式计算框架。
-- **iceberg-rest**：Iceberg 表的元数据管理 REST API 服务（和 Hive Metadata 对标）。
 
 ---
 
