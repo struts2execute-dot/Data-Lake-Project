@@ -329,6 +329,9 @@ node.data-dir=/data/trino
 
 ![docker](https://github.com/struts2execute-dot/Data-Lake-Project/blob/main/img/docker.png)
 
+> [!WARNING]
+> iceberg-rest可能会启动失败，这是因为iceberg-postgres服务还没有启动成功，依赖失败，此时手动启动一下iceberg-rest即可。
+
 - 启动所有服务：
 
   ```bash
