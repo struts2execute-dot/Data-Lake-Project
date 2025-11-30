@@ -234,21 +234,39 @@ https://github.com/databricks/iceberg-kafka-connect/releases
 
 项目根目录下，新建trino目录，进入后新建catalog/coordinator/worker三个子目录，进行配置文件编写
 
-* catalog/iceberg.properties 配置项
+* catalog/iceberg.properties
 
 ```markdown
-
 connector.name=iceberg
 iceberg.catalog.type=rest
 iceberg.rest-catalog.uri=http://iceberg-rest:8181
-
 fs.native-s3.enabled=true
 s3.endpoint=http://minio:9000
 s3.aws-access-key=admin
 s3.aws-secret-key=admin12345
 s3.region=us-east-1
 s3.path-style-access=true
+```
 
+* catalog/clickhouse.properties
+
+```markdown
+connector.name=clickhouse
+connection-url=jdbc:clickhouse://10.5.15.64:8123
+connection-user=default
+connection-password=test123456
+```
+
+* coordinator/config.properties
+
+```markdown
+coordinator=true
+node-scheduler.include-coordinator=false
+http-server.http.port=8085
+query.max-memory=2GB
+query.max-memory-per-node=512MB
+memory.heap-headroom-per-node=256MB
+discovery.uri=http://trino-coordinator:8085
 ```
 
 ## 五 启动 / 停止 / 状态检查
