@@ -215,8 +215,6 @@ https://www.confluent.io/hub/confluentinc/kafka-connect-s3
 2. 在docker-compose.yml的同级目录下新建文件夹plugins
 3. 将下载的插件复制到plugins并解压
 
-![connector](https://github.com/struts2execute-dot/Data-Lake-Project/blob/main/img/connector.png)
-
 ---
 
 ### 2. Iceberg Kafka Connector
