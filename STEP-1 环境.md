@@ -15,7 +15,7 @@
 ## 一 创建项目文件夹
 创建项目文件夹
 
-![project](images/IMG_20241123_225734.jpg)
+![project](https://github.com/struts2execute-dot/Data-Lake-Project/blob/main/img/project.png)
 
 ---
 
