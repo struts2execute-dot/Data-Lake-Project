@@ -211,6 +211,8 @@ networks:
 https://www.confluent.io/hub/confluentinc/kafka-connect-s3
 ```
 
+![connector](https://github.com/struts2execute-dot/Data-Lake-Project/blob/main/img/project.png)
+
 下载后存入：
 
 ```
