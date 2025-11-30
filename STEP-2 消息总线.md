@@ -68,3 +68,13 @@ curl -X POST -H "Content-Type: application/json" \
     }
   }'
 ```
+
+### 2-1 维护connector
+
+```
+// 查看 连接器 状态
+curl http://localhost:8083/connectors/events-iceberg-sink/status | jq .
+
+// 删除 连接器
+curl -X DELETE http://localhost:8083/connectors/events-iceberg-sink  
+```
