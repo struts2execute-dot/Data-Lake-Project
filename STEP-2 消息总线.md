@@ -78,3 +78,18 @@ curl http://localhost:8083/connectors/events-iceberg-sink/status | jq .
 // 删除 连接器
 curl -X DELETE http://localhost:8083/connectors/events-iceberg-sink  
 ```
+
+## 三 事件topic
+
+- 需要关闭kafka自动创建topic的功能；
+- topic需要我们手动创建；
+- 模拟环境下，宿主机安装kafka客户端，使用命令进行创建
+
+```
+// kafka
+cd /opt/homebrew/opt/kafka/bin
+// 创建主线topic
+kafka-topics --bootstrap-server localhost:19092 --create --topic events  --partitions 1  --replication-factor 1
+// 创建事物提交topic
+kafka-topics --bootstrap-server localhost:19092 --create --topic iceberg-control-events  --partitions 1  --replication-factor 1
+```
