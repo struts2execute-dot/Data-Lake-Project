@@ -227,13 +227,8 @@ https://www.confluent.io/hub/confluentinc/kafka-connect-s3
 https://github.com/databricks/iceberg-kafka-connect/releases
 ```
 
-放入：
-
-```
-./plugins/
-```
-
-并解压。
+1. 下载iceberg-kafka-connect-runtime-0.6.19.zip
+2. 将下载的插件复制到plugins并解压
 
 ---
 
