@@ -234,7 +234,7 @@ https://github.com/databricks/iceberg-kafka-connect/releases
 
 项目根目录下，新建trino目录，进入后新建catalog/coordinator/worker三个子目录，进行配置文件编写
 
-** catalog/iceberg.properties 配置项
+* catalog/iceberg.properties 配置项
 
 ```markdown
 
