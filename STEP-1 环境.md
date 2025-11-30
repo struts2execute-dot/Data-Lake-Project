@@ -1,4 +1,4 @@
-# 🚀 数据湖项目（Kafka + Iceberg + MinIO + Trino 本地环境）
+# 数据湖项目（Kafka + Iceberg + MinIO + Trino 本地环境）
 
 本项目基于 Docker 构建一个轻量级的数据湖（Lakehouse）环境，包含：
 
@@ -12,7 +12,7 @@
 
 ---
 
-## 📌 一、docker-compose 环境
+## 一、docker-compose 环境
 
 将以下内容保存为 `docker-compose.yml`：
 
