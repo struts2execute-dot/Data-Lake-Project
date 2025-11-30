@@ -201,7 +201,7 @@ networks:
 
 ---
 
-## 📌 二、插件准备
+## 📌 三、插件准备
 
 ### 1. S3 Sink Connector（Confluent 官方）
 
@@ -232,7 +232,9 @@ https://github.com/databricks/iceberg-kafka-connect/releases
 
 ---
 
-## 📌 三、启动 / 停止 / 状态检查
+## 📌 四、启动 / 停止 / 状态检查
+
+![docker](https://github.com/struts2execute-dot/Data-Lake-Project/blob/main/img/connector.png)
 
 - 启动所有服务：
 
@@ -260,7 +262,7 @@ https://github.com/databricks/iceberg-kafka-connect/releases
 
 ---
 
-## 📌 四、服务 Web 界面（默认端口）
+## 📌 五、服务 Web 界面（默认端口）
 
 | 服务 | 访问地址 |
 |------|----------|
@@ -272,7 +274,7 @@ https://github.com/databricks/iceberg-kafka-connect/releases
 
 ---
 
-## 📌 五、注意事项 / 建议
+## 📌 六、注意事项 / 建议
 
 - **Iceberg Catalog 必须使用 PostgreSQL**，比 SQLite 稳定得多。
 - **MinIO 仅用于本地开发**，生产环境应替换为 AWS S3 / 阿里云 OSS / GCS 等对象存储。
