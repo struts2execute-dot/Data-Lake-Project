@@ -234,7 +234,7 @@ https://github.com/databricks/iceberg-kafka-connect/releases
 
 ## 📌 四、启动 / 停止 / 状态检查
 
-![docker](https://github.com/struts2execute-dot/Data-Lake-Project/blob/main/img/connector.png)
+![docker](https://github.com/struts2execute-dot/Data-Lake-Project/blob/main/img/docker.png)
 
 - 启动所有服务：
 
