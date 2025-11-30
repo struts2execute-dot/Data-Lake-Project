@@ -217,14 +217,6 @@ https://www.confluent.io/hub/confluentinc/kafka-connect-s3
 
 ![connector](https://github.com/struts2execute-dot/Data-Lake-Project/blob/main/img/connector.png)
 
-下载后存入：
-
-```
-./plugins/
-```
-
-并解压。
-
 ---
 
 ### 2. Iceberg Kafka Connector
