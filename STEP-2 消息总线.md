@@ -179,3 +179,205 @@ kafka-topics --bootstrap-server localhost:19092 --create --topic iceberg-control
   }
 }
 ```
+
+## 五 事件逻辑抽象
+
+### 5-1 数据模型
+对于开发来说，不同的业务需要抽象成一个统一的Schema + JSON格式的数据，确保逻辑简单，维护方便。
+
+- ***事件模型***
+```go
+package payload
+
+// 通用模型
+type Payload struct {
+    Category      string `json:"category"`
+    Event         string `json:"event"`
+    LogDate       string `json:"log_date"`
+    Hour          string `json:"hour"`
+    PlatID        int32  `json:"plat_id"`
+    AppID         int32  `json:"app_id"`
+    Ts            int64  `json:"ts"`
+    SchemaVersion int32  `json:"schema_version"`
+}
+
+// 投注事件
+type Bet struct {
+    Payload
+    UserID   *int32   `json:"user_id"`
+    OrderID  *string  `json:"order_id"`
+    Amount   *float64 `json:"amount"`
+    Currency *string  `json:"currency"`
+    GameID   *int32   `json:"game_id"`
+}
+
+// 充值事件
+type Recharge struct {
+    Payload
+    Status   *string  `json:"status"`
+    UserID   *int32   `json:"user_id"`
+    OrderID  *string  `json:"order_id"`
+    Amount   *float64 `json:"amount"`
+    Currency *string  `json:"currency"`
+    Reason   *string  `json:"reason"`
+}
+```
+
+- ***schema模型***
+```go
+package schema
+
+import (
+    "reflect"
+    "strings"
+)
+
+type Schema struct {
+    Type   string  `json:"type"`
+    Name   string  `json:"name"`
+    Fields []Field `json:"fields"`
+}
+
+type Field struct {
+    Field    string `json:"field"`
+    Type     string `json:"type"`
+    Optional bool   `json:"optional,omitempty"`
+}
+
+type Envelope struct {
+    Schema  Schema      `json:"schema"`
+    Payload interface{} `json:"payload"`
+}
+
+func BuildSchemaFromStruct(t reflect.Type, name string) Schema {
+    fields := make([]Field, 0)
+    var walk func(rt reflect.Type)
+    walk = func(rt reflect.Type) {
+       for i := 0; i < rt.NumField(); i++ {
+          f := rt.Field(i)
+          // 匿名嵌入（比如嵌入 Payload）
+          if f.Anonymous {
+             walk(f.Type)
+             continue
+          }
+          // 非导出字段跳过
+          if f.PkgPath != "" {
+             continue
+          }
+          tag := f.Tag.Get("json")
+          if tag == "-" {
+             continue
+          }
+          jsonName := strings.Split(tag, ",")[0]
+          if jsonName == "" {
+             jsonName = f.Name
+          }
+          // optional 规则：指针类型 或 tag 里含 omitempty
+          isOptional := false
+          ft := f.Type
+          if ft.Kind() == reflect.Ptr {
+             isOptional = true
+             ft = ft.Elem()
+          }
+          if strings.Contains(tag, "omitempty") {
+             isOptional = true
+          }
+          var typeStr string
+          switch ft.Kind() {
+          case reflect.String:
+             typeStr = "string"
+          case reflect.Int32:
+             typeStr = "int32"
+          case reflect.Int, reflect.Int64:
+             typeStr = "int64"
+          case reflect.Float32:
+             typeStr = "float"
+          case reflect.Float64:
+             typeStr = "double"
+          case reflect.Bool:
+             typeStr = "boolean"
+          default:
+             // 复杂类型后面需要的话再拓展
+             continue
+          }
+          fields = append(fields, Field{
+             Field:    jsonName,
+             Type:     typeStr,
+             Optional: isOptional,
+          })
+       }
+    }
+    walk(t)
+    return Schema{
+       Type:   "struct",
+       Name:   name,
+       Fields: fields,
+    }
+}
+```
+
+- ***事件注册***
+```go
+package model
+
+import (
+    "go-test/model/payload"
+    "go-test/model/schema"
+    "reflect"
+)
+
+// SchemaRegistry 业务类型 -> 对应的 Schema
+var SchemaRegistry = map[string]schema.Schema{}
+
+func RegisterSchema(eventType string, sample interface{}) {
+    t := reflect.TypeOf(sample)
+    if t.Kind() == reflect.Ptr {
+       t = t.Elem()
+    }
+    s := schema.BuildSchemaFromStruct(t, eventType+"_record")
+    SchemaRegistry[eventType] = s
+}
+
+func init() {
+    // event 类型直接用 Event 字段的值
+    RegisterSchema("recharge", payload.Recharge{})
+    RegisterSchema("bet", payload.Bet{})
+}
+```
+
+- ***消息体编译***
+```go
+package model
+
+import (
+    "go-test/model/schema"
+    "reflect"
+)
+
+func BuildEnvelope(data interface{}) *schema.Envelope {
+    v := reflect.ValueOf(data)
+    if v.Kind() == reflect.Ptr {
+       v = v.Elem()
+    }
+    // 所有业务 struct 都嵌入了 Payload，有 Event 字段
+    field := v.FieldByName("Event")
+    if !field.IsValid() || field.Kind() != reflect.String {
+       panic("BuildEnvelope: data has no string field `Event`")
+    }
+    eventType := field.String()
+
+    s, ok := SchemaRegistry[eventType]
+    if !ok {
+       panic("BuildEnvelope: schema not registered for event = " + eventType)
+    }
+
+    return &schema.Envelope{
+       Schema:  s,
+       Payload: data,
+    }
+}
+```
+至此，如果需要新增事件，只需要做：
+- 在payload中新增事件的模型；
+- 对新事件进行注册
+  RegisterSchema("bet", payload.Bet{})
