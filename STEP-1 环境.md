@@ -211,6 +211,10 @@ networks:
 https://www.confluent.io/hub/confluentinc/kafka-connect-s3
 ```
 
+1. 根据confluentinc/cp-kafka-connect:7.5.0的版本配置，找到对应的插件并下载，我用的是10.5.23版本
+2. 在docker-compose.yml的同级目录下新建文件夹plugins
+3. 将下载的插件复制到plugins并解压
+
 ![connector](https://github.com/struts2execute-dot/Data-Lake-Project/blob/main/img/connector.png)
 
 下载后存入：
