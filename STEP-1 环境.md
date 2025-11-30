@@ -269,6 +269,23 @@ memory.heap-headroom-per-node=256MB
 discovery.uri=http://trino-coordinator:8085
 ```
 
+* coordinator/jvm.config
+
+```markdown
+-server
+-Xmx2G
+-Xms2G
+-XX:+UseG1GC
+```
+
+* coordinator/node.properties
+
+```markdown
+node.environment=dev
+node.id=coordinator-1
+node.data-dir=/data/trino
+```
+
 ## 五 启动 / 停止 / 状态检查
 
 ![docker](https://github.com/struts2execute-dot/Data-Lake-Project/blob/main/img/docker.png)
