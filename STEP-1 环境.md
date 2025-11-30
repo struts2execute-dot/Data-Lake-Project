@@ -234,6 +234,11 @@ https://github.com/databricks/iceberg-kafka-connect/releases
 
 项目根目录下，新建trino目录，进入后新建catalog/coordinator/worker三个子目录，进行配置文件编写
 
+> [!IMPORTANT]
+> catalog 为iceberg元数据服务配置。
+> coordinator 为trino主节点配置。
+> worker 为trino计算节点配置
+
 * catalog/iceberg.properties
 
 ```markdown
@@ -283,6 +288,32 @@ discovery.uri=http://trino-coordinator:8085
 ```markdown
 node.environment=dev
 node.id=coordinator-1
+node.data-dir=/data/trino
+```
+
+* worker/config.properties
+
+```markdown
+coordinator=false
+http-server.http.port=8086
+discovery.uri=http://trino-coordinator:8085
+query.max-memory-per-node=512MB
+memory.heap-headroom-per-node=256MB
+```
+
+* worker/jvm.config
+
+```markdown
+-server
+-Xmx2G
+-Xms2G
+-XX:+UseG1GC
+```
+
+* worker/node.properties
+
+```markdown
+node.environment=dev
 node.data-dir=/data/trino
 ```
 
