@@ -11,11 +11,13 @@ ODS数据流的安全稳定，是整个架构的核心基础
 ## 二 采集器
 
 ### 2-1 http创建connector
+
 - tasks.max：消费者数量
 - topics：消息总线topic
 - consumer.override.max.poll.records：每次拉取的数据条数
 - errors.deadletterqueue.topic.name：异常数据topic
 - iceberg.control.topic：事务与提交协调器topic，为了确保内部保协调指令的顺序，所以这里partitions的数量必须是1，不能去修改本topic的partitions数量。
+
 ```yaml
 curl -X POST -H "Content-Type: application/json" \
   http://localhost:8083/connectors \
