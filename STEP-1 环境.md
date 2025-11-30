@@ -199,6 +199,14 @@ networks:
     driver: bridge
 ```
 
+- **zookeeper**：注册中心，暂服务于 kafka。
+- **kafka**：消息中间件，适合批量拉取和批量提交 offset，以及后端匹配的各种插件，是核心之一。
+- **kafka-ui**：用于做 kafka 监控。
+- **kafka-connect**：用于消费 kafka 消息，并进行数据转换 / 压缩 / S3 落盘等操作。
+- **minio**：分布式存储，可替换为 AWS。
+- **trino**：分布式计算框架。
+- **iceberg-rest**：Iceberg 表的元数据管理 REST API 服务（和 Hive Metadata 对标）。
+
 ---
 
 ## 三、插件准备
@@ -234,7 +242,7 @@ https://github.com/databricks/iceberg-kafka-connect/releases
 
 项目根目录下，新建trino目录，进入后新建catalog/coordinator/worker三个子目录，进行配置文件编写
 
-> [!IMPORTANT]
+> [!说明]
 > catalog 为iceberg元数据服务配置。
 > coordinator 为trino主节点配置。
 > worker 为trino计算节点配置
