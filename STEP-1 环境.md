@@ -12,7 +12,14 @@
 
 ---
 
-## 一、docker-compose 环境
+## 一 创建项目文件夹
+创建项目文件夹
+
+![project](images/IMG_20241123_225734.jpg)
+
+---
+
+## 二 docker-compose 环境
 
 将以下内容保存为 `docker-compose.yml`：
 
