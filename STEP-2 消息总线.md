@@ -93,3 +93,89 @@ kafka-topics --bootstrap-server localhost:19092 --create --topic events  --parti
 // 创建事物提交topic
 kafka-topics --bootstrap-server localhost:19092 --create --topic iceberg-control-events  --partitions 1  --replication-factor 1
 ```
+
+## 四 消息体
+因为做消息总线，需要配合插件的数据解析，所以必须采用Kafka Connect 官方标准格式：Schema + JSON，样例如下：
+
+```json
+{
+  "schema": {
+    "type": "struct",
+    "name": "bet_record",
+    "fields": [
+      {
+        "field": "category",
+        "type": "string"
+      },
+      {
+        "field": "event",
+        "type": "string"
+      },
+      {
+        "field": "log_date",
+        "type": "string"
+      },
+      {
+        "field": "hour",
+        "type": "string"
+      },
+      {
+        "field": "plat_id",
+        "type": "int32"
+      },
+      {
+        "field": "app_id",
+        "type": "int32"
+      },
+      {
+        "field": "ts",
+        "type": "int64"
+      },
+      {
+        "field": "schema_version",
+        "type": "int32"
+      },
+      {
+        "field": "user_id",
+        "type": "int32",
+        "optional": true
+      },
+      {
+        "field": "order_id",
+        "type": "string",
+        "optional": true
+      },
+      {
+        "field": "amount",
+        "type": "double",
+        "optional": true
+      },
+      {
+        "field": "currency",
+        "type": "string",
+        "optional": true
+      },
+      {
+        "field": "game_id",
+        "type": "int32",
+        "optional": true
+      }
+    ]
+  },
+  "payload": {
+    "category": "biz",
+    "event": "bet",
+    "log_date": "2025-11-25",
+    "hour": "18",
+    "plat_id": 1,
+    "app_id": 10406,
+    "ts": 1732527602000,
+    "schema_version": 1,
+    "user_id": 2001,
+    "order_id": "10001",
+    "amount": 10,
+    "currency": "BRL",
+    "game_id": 777
+  }
+}
+```
