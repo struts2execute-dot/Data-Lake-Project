@@ -234,7 +234,8 @@ https://github.com/databricks/iceberg-kafka-connect/releases
 
 ---
 
-## 四 启动 / 停止 / 状态检查
+## 四 配置文件
+
 
 ## 五 启动 / 停止 / 状态检查
 
