@@ -214,7 +214,6 @@ https://www.confluent.io/hub/confluentinc/kafka-connect-s3
 1. 根据confluentinc/cp-kafka-connect:7.5.0的版本配置，找到对应的插件并下载，我用的是10.5.23版本
 2. 在docker-compose.yml的同级目录下新建文件夹plugins
 3. 将下载的插件复制到plugins并解压
-4. (我在本项目的plugin文件夹下准备好了)
 
 ![connector](https://github.com/struts2execute-dot/Data-Lake-Project/blob/main/img/connector.png)
 
@@ -230,12 +229,29 @@ https://github.com/databricks/iceberg-kafka-connect/releases
 
 1. 下载iceberg-kafka-connect-runtime-0.6.19.zip
 2. 将下载的插件复制到plugins并解压
-3. (我在本项目的plugin文件夹下准备好了)
 
 ---
 
-## 四 配置文件
+## 四 trino配置文件
 
+项目根目录下，新建trino目录，进入后新建catalog/coordinator/worker三个子目录，根据教程进行配置文件编写
+
+# catalog 配置项
+
+```yaml
+
+connector.name=iceberg
+iceberg.catalog.type=rest
+iceberg.rest-catalog.uri=http://iceberg-rest:8181
+
+fs.native-s3.enabled=true
+s3.endpoint=http://minio:9000
+s3.aws-access-key=admin
+s3.aws-secret-key=admin12345
+s3.region=us-east-1
+s3.path-style-access=true
+
+```
 
 ## 五 启动 / 停止 / 状态检查
 
