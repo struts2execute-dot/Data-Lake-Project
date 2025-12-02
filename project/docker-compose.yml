@@ -1,0 +1,185 @@
+version: '3.8'
+
+services:
+
+  # -------------------------------
+  # 0) Zookeeper & Kafka & Connect
+  # -------------------------------
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+      - "19092:19092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: PLAINTEXT_INTERNAL://0.0.0.0:9092,PLAINTEXT_EXTERNAL://0.0.0.0:19092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT_INTERNAL://kafka:9092,PLAINTEXT_EXTERNAL://localhost:19092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT_INTERNAL:PLAINTEXT,PLAINTEXT_EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT_INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+      KAFKA_LOG_RETENTION_HOURS: 168
+      # --- 单机开发环境必配：事务日志副本数/ISR ---
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    ports:
+      - "8080:8080"
+    depends_on:
+      - kafka
+    environment:
+      KAFKA_CLUSTERS_0_NAME: "local"
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: "kafka:9092"
+
+  connect:
+    image: confluentinc/cp-kafka-connect:7.5.0
+    container_name: connect
+    depends_on:
+      - kafka
+    ports:
+      - "8083:8083"
+    environment:
+      CONNECT_BOOTSTRAP_SERVERS: "kafka:9092"
+      CONNECT_REST_ADVERTISED_HOST_NAME: "connect"
+      CONNECT_REST_PORT: "8083"
+      CONNECT_GROUP_ID: "connect-cluster"
+
+      CONNECT_CONFIG_STORAGE_TOPIC: "connect-configs"
+      CONNECT_OFFSET_STORAGE_TOPIC: "connect-offsets"
+      CONNECT_STATUS_STORAGE_TOPIC: "connect-status"
+      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: "1"
+      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: "1"
+      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: "1"
+
+      # key 用字符串
+      CONNECT_KEY_CONVERTER: "org.apache.kafka.connect.storage.StringConverter"
+      CONNECT_KEY_CONVERTER_SCHEMAS_ENABLE: "false"
+
+      # value 用 JsonConverter + schema（为了后面 Parquet）
+      CONNECT_VALUE_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
+      CONNECT_VALUE_CONVERTER_SCHEMAS_ENABLE: "true"
+
+      # 插件路径必须包含 confluent-hub 目录
+      CONNECT_PLUGIN_PATH: "/usr/share/java,/usr/share/confluent-hub-components,/connect-plugins"
+    volumes:
+      - ./plugins:/connect-plugins
+
+    # 关键：启动时先安装 S3 插件，再启动 connect
+    command:
+      - bash
+      - -c
+      - |
+        echo "Installing S3 sink connector from Confluent Hub..."
+        confluent-hub install --no-prompt confluentinc/kafka-connect-s3:latest
+        echo "Starting Kafka Connect..."
+        /etc/confluent/docker/run
+
+  # -------------------------------
+  # 1) MinIO (S3 Object Storage)
+  # -------------------------------
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: admin12345
+    command: server /data --console-address ":9090"
+    ports:
+      - "9000:9000"
+      - "9090:9090"
+    volumes:
+      - ./minio-data:/data
+
+  # -----------------------------------------------
+  # 2) Iceberg REST Catalog (取代 Hive Metastore)
+  # -----------------------------------------------
+  iceberg-postgres:
+    image: postgres:15-alpine
+    container_name: iceberg-postgres
+    environment:
+      POSTGRES_DB: iceberg          # Catalog 库名
+      POSTGRES_USER: iceberg        # 用户名
+      POSTGRES_PASSWORD: iceberg123 # 密码
+    volumes:
+      - ./iceberg-pg-data:/var/lib/postgresql/data
+
+  iceberg-rest:
+    image: tabulario/iceberg-rest:latest
+    container_name: iceberg-rest
+    depends_on:
+      - minio
+      - iceberg-postgres
+    environment:
+      # 使用 Postgres 作为 Iceberg Catalog 元数据库（更稳定，替代默认的 SQLite）
+      CATALOG_URI: jdbc:postgresql://iceberg-postgres:5432/iceberg?user=iceberg&password=iceberg123
+      # catalog 仓库根目录，保持 s3:// 前缀
+      CATALOG_WAREHOUSE: s3://warehouse/
+      # 走 S3FileIO，而不是默认 Hadoop FileIO
+      CATALOG_IO__IMPL: org.apache.iceberg.aws.s3.S3FileIO
+      # S3(MinIO) 相关配置 —— 注意是 CATALOG_S3_* 前缀
+      CATALOG_S3_ENDPOINT: http://minio:9000
+      CATALOG_S3_PATH__STYLE__ACCESS: "true"
+      # AWS SDK 会从这几个环境变量里拿 AK/SK
+      AWS_ACCESS_KEY_ID: admin
+      AWS_SECRET_ACCESS_KEY: admin12345
+      AWS_REGION: us-east-1
+    ports:
+      - "8181:8181"
+
+  # -------------------------------
+  # 3) Trino Coordinator
+  # -------------------------------
+  trino-coordinator:
+    image: trinodb/trino:latest
+    container_name: trino-coordinator
+    depends_on:
+      - iceberg-rest
+      - minio
+    ports:
+      - "8085:8085"
+    volumes:
+      - ./trino/coordinator:/etc/trino
+      - ./trino/catalog:/etc/trino/catalog
+
+  # -------------------------------
+  # 4) Trino Worker Nodes
+  # -------------------------------
+  trino-worker-1:
+    image: trinodb/trino:latest
+    container_name: trino-worker-1
+    depends_on:
+      - trino-coordinator
+    volumes:
+      - ./trino/worker:/etc/trino
+      - ./trino/catalog:/etc/trino/catalog
+
+  trino-worker-2:
+    image: trinodb/trino:latest
+    container_name: trino-worker-2
+    depends_on:
+      - trino-coordinator
+    volumes:
+      - ./trino/worker:/etc/trino
+      - ./trino/catalog:/etc/trino/catalog
+
+# -------------------------------
+# Proper network definition
+# -------------------------------
+networks:
+  default:
+    name: iceberg_net
+    driver: bridge
