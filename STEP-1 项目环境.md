@@ -1,4 +1,4 @@
-# 数据湖项目（Kafka + Iceberg + MinIO + Trino 本地环境）
+# 项目环境（Kafka + Iceberg + MinIO + Trino 本地环境）
 
 本项目基于 Docker 构建一个轻量级的数据湖（Lakehouse）环境，包含：
 
