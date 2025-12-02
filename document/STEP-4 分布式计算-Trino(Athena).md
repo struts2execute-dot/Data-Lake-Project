@@ -7,6 +7,8 @@
     - 密码：无
 - 连接以后即可进行 DWS 数据聚合。
 
+---
+
 ## 一 介绍
 ![project](https://github.com/struts2execute-dot/Data-Lake-Project/blob/main/img/cal.png)
 
@@ -50,6 +52,8 @@ Coordinator：收集所有 Worker 部分聚合结果，合并成最终结果
 ↓
 返回 SQL 结果
 ```
+
+---
 
 ## 二 DWS聚合逻辑
 - 按小时调度，使用merge语法作upsert操作，以便支持数据重跑
@@ -118,6 +122,8 @@ WHEN NOT MATCHED THEN
 select * from iceberg.demo.dws_biz_bet_hour;
 ```
 ![project](https://github.com/struts2execute-dot/Data-Lake-Project/blob/main/img/dws.png)
+
+---
 
 ## 三 监控
 - 进入trino集群监控 http://localhost:8085/ui/preview/#/dashboard

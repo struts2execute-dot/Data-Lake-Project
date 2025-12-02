@@ -1,6 +1,8 @@
 # 数据装载
 目的：把trino中的DWS冷数据装载到clickhouse中，作为ck的业务数据提供给客户端查询
 
+---
+
 ## 第一 准备工作
 ### 2-1 在clickhouse中建立ads表
 ```sql
@@ -45,6 +47,8 @@ FROM
 LIMIT 10;
 ```
 
+---
+
 ## 二 装载数据
 已知
 - ck中已经建立好了表ads_biz_bet_hour，用于接收trino中dws_biz_bet_hour的数据。
@@ -77,6 +81,8 @@ WHERE log_date = DATE '2025-11-25'
 从ck中进行验证
 ![project](https://github.com/struts2execute-dot/Data-Lake-Project/blob/main/img/ck_check.png)
 
+---
+
 ## 三 ck多模组配置
 在 ./trino/catalog/ 下建多个配置文件，一个配置代表一个plat组。多个 catalog 的“名字”是由 文件名 决定的，根据文件名进行数据库访问即可）。
 * clickhouse_1003.properties
@@ -94,4 +100,6 @@ connection-user=default
 connection-password=xxx
 ```
 
-至此：整个数湖的数据调度逻辑全部完成。
+---
+
+ 至此：整个数湖的数据调度逻辑全部完成。 

@@ -8,6 +8,8 @@ ODS数据流的安全稳定，是整个架构的核心基础
 
 ![data-flow](https://github.com/struts2execute-dot/Data-Lake-Project/blob/main/img/data-flow.png)
 
+---
+
 ## 二 采集器
 
 ### 2-1 http创建connector
@@ -78,6 +80,7 @@ curl http://localhost:8083/connectors/events-iceberg-sink/status | jq .
 // 删除 连接器
 curl -X DELETE http://localhost:8083/connectors/events-iceberg-sink  
 ```
+---
 
 ## 三 事件topic
 
@@ -93,6 +96,8 @@ kafka-topics --bootstrap-server localhost:19092 --create --topic events  --parti
 // 创建事物提交topic
 kafka-topics --bootstrap-server localhost:19092 --create --topic iceberg-control-events  --partitions 1  --replication-factor 1
 ```
+
+---
 
 ## 四 消息体
 因为做消息总线，需要配合插件的数据解析，所以必须采用Kafka Connect 官方标准格式：Schema + JSON，样例如下：
@@ -179,6 +184,8 @@ kafka-topics --bootstrap-server localhost:19092 --create --topic iceberg-control
   }
 }
 ```
+
+---
 
 ## 五 事件逻辑抽象
 
@@ -422,6 +429,8 @@ func GetProducer() sarama.SyncProducer {
   - metadata：表元数据
 
 ![docker](https://github.com/struts2execute-dot/Data-Lake-Project/blob/main/img/s3.png)
+
+---
 
 ## 六总结
 通过消息总线，我们可以将事件数据稳定的存储到S3存储中，为下一步的分布式计算做好准备。
