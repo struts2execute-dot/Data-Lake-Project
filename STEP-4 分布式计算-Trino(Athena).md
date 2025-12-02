@@ -1,10 +1,12 @@
 # 分布式计算
 本章核心是使用自建Trino对已经完成存储的文件进行分析，核心原理应该还是从mapreduce演化而来的，逻辑差不多。
-* 首先需要通过dbeaver或者dbVisualizer(推荐，dbeaver连接会有一些莫名其妙的问题)连接到trino。
-- 地址：localhost:8085
-- 用户名：任意，但必填
-- 密码：无
-* 连接以后即可进行DWS数据聚合。
+相比于分布式计算的底层逻辑，对于数据处理中的基础概念，包括：文件/元数据/数据分层等，应该首先有较好的理解。
+- 首先需要通过 dbeaver 或者 dbVisualizer（推荐，dbeaver 连接会有一些莫名其妙的问题）连接到 trino。
+    - 地址：localhost:8085
+    - 用户名：任意，但必填
+    - 密码：无
+- 连接以后即可进行 DWS 数据聚合。
+
 
 ## 一 介绍
 ![project](https://github.com/struts2execute-dot/Data-Lake-Project/blob/main/img/cal.png)
