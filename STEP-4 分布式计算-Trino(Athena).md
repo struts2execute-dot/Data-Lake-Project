@@ -1,5 +1,10 @@
 # 分布式计算
-自建Trino对标AWS的Athena，核心原理应该还是从mapreduce演化而来的，逻辑差不多。
+本章核心是使用自建Trino对已经完成存储的文件进行分析，核心原理应该还是从mapreduce演化而来的，逻辑差不多。
+* 首先需要通过dbeaver或者dbVisualizer(推荐，dbeaver连接会有一些莫名其妙的问题)连接到trino。
+- 地址：localhost:8085
+- 用户名：任意，但必填
+- 密码：无
+* 连接以后即可进行DWS数据聚合。
 
 ## 一 介绍
 ![project](https://github.com/struts2execute-dot/Data-Lake-Project/blob/main/img/cal.png)
