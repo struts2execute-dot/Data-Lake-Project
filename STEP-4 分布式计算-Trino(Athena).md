@@ -51,7 +51,7 @@ Coordinator：收集所有 Worker 部分聚合结果，合并成最终结果
 返回 SQL 结果
 ```
 
-## DWS聚合逻辑
+## 二 DWS聚合逻辑
 - 按小时调度，使用merge语法作upsert操作，以便支持数据重跑
 ```sql
 --view table ddl
